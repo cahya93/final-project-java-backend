@@ -1,0 +1,36 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "Data">
+    <insert id = "payment" parameterType = "com.yanto.rumahmakan.model.Payment">
+        INSERT INTO TBL_PAYMENT (USER, MENU, QUANTITY, PRICE ) VALUES (#{user}, #{menu},
+        #{quantity}, #{price});
+        <selectKey keyProperty = "id" resultType = "int" order = "AFTER">
+            select last_insert_id() as id
+        </selectKey>
+    </insert>
+
+    <resultMap id = "result" type = "com.yanto.rumahmakan.model.RumahMakan">
+        <result property = "id_lokasi" column = "id_lokasi"/>
+<!--        <result property = "id_rumah_makan" column = "id_rumah_makan"/>-->
+<!--        <result property = "id_menu" column = "id_menu"/>-->
+        <result property = "nama_rumah_makan" column = "nama_rumah_makan"/>
+        <result property = "menu" column = "menu"/>
+        <result property = "price" column = "price"/>
+    </resultMap>
+
+    <select id = "getAll" resultMap = "result">
+        SELECT TBL_MENU. *, TBL_RUMAH_MAKAN. *
+        FROM TBL_MENU
+        JOIN TBL_RUMAH_MAKAN
+        ON TBL_MENU.ID_RUMAH_MAKAN = TBL_RUMAH_MAKAN.ID_RM
+    </select>
+
+    <resultMap id = "result2" type = "com.yanto.rumahmakan.model.Lokasi">
+        <result property = "id_rumah_makan" column = "id_rumah_makan"/>
+        <result property = "nama_rumah_makan" column = "nama_rumah_makan"/>
+    </resultMap>
+    <select id = "viewByLokasi" resultMap = "result2">
+        SELECT * FROM TBL_RUMAH_MAKAN WHERE ID_LOKASI = ${id_lokasi};
+    </select>
+
+</mapper>

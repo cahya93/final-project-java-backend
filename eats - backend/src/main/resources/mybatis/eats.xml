@@ -1,0 +1,35 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "Data">
+    <insert id = "insertUser" parameterType = "com.yanto.DB.model.User">
+        INSERT INTO TBL_USER (USERNAME, PASSWORD, EMAIL ) VALUES (#{username}, #{password},
+        #{email});
+        <selectKey keyProperty = "id_user" resultType = "int" order = "AFTER">
+            select last_insert_id() as id
+        </selectKey>
+    </insert>
+
+    <insert id = "insertOrder" parameterType = "com.yanto.DB.model.Order">
+        INSERT INTO TBL_ORDER_SEMENTARA (USER, MENU, QUANTITY, PRICE, STATUS ) VALUES (#{user}, #{menu},
+        #{quantity}, #{price}, #{status});
+        <selectKey keyProperty = "id" resultType = "int" order = "AFTER">
+            select last_insert_id() as id
+        </selectKey>
+    </insert>
+
+    <update id = "updateOrder" parameterType = "com.yanto.DB.model.Order">
+        UPDATE TBL_ORDER_SEMENTARA SET STATUS = #{status} WHERE ID = #{id};
+    </update>
+
+    <resultMap id = "login" type = "com.yanto.DB.model.User">
+        <result property = "email" column = "email"/>
+        <result property = "password" column = "password"/>
+    </resultMap>
+    <select id = "userlog" parameterType = "map" resultMap = "login">
+        SELECT * FROM TBL_USER where email = #{email} AND password = #{password};
+    </select>
+
+   <select id="viewUser" parameterType = "map" resultMap = "cekUser">
+       SELECT * FROM TBL_USER
+   </select>
+</mapper>
