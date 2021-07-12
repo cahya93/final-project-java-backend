@@ -57,4 +57,15 @@ public class RestApiSend {
             System.out.println(" [x] Sent '" + dataString + "'");
         }
     }
+    
+    public void UserData (String dataString,String paramater) throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
+            channel.queueDeclare(paramater, true, false, false, null);
+            channel.basicPublish("", paramater, null, dataString.getBytes(StandardCharsets.UTF_8));
+            System.out.println(" [x] Sent '" + dataString + "'");
+        }
+    }
 }

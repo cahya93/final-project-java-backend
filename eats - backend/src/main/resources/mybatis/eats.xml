@@ -32,4 +32,8 @@
    <select id="viewUser" parameterType = "map" resultMap = "cekUser">
        SELECT * FROM TBL_USER
    </select>
+
+    <update id = "resetPass" parameterType = "com.yanto.DB.model.User">
+        UPDATE TBL_USER SET password = #{password} WHERE username = #{username};
+    </update>
 </mapper>

@@ -18,6 +18,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 
 @Service
 public class DBServices {
@@ -30,6 +31,39 @@ public class DBServices {
 		SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
 		session = sqlSessionFactory.openSession();
 	}
+	public static boolean isValidEmail(String email){// regex validation for email
+		// Regex to check valid email.
+		String regex = "([a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*)@([a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*[.][a-zA-Z]{2,})";
+		// Compile the ReGex
+		boolean b = Pattern.matches(regex, email);
+		if (email == null) {
+			return false;
+		}
+		return b;
+	}
+	public static boolean isValidPassword(String password){//regex Validation for password
+		// Regex to check valid password.
+		String regex = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=_])(?=\\S+$).{8,}";
+		// Compile the ReGex
+		boolean b1 = Pattern.matches(regex, password);
+		if (password == null) {
+			return false;
+		}
+		return b1;
+	}
+	public boolean Login(User user){//Login Method
+		boolean hasil;
+		boolean e = isValidEmail(user.getUsername());//get boolean regex for valid email
+		boolean p = isValidPassword(user.getPassword());//get boolean regex for valid password
+		System.out.println("Validation Process");
+		if(e  &&  p){//Validate Email and Password Format Using Regex
+			return hasil = true;
+		}else{
+			return hasil = false;
+		}
+		
+		
+	}
 	
 	public void insertUser(String siswaString) throws IOException, TimeoutException {
 		System.out.println("Memulai insert user..");
@@ -37,9 +71,10 @@ public class DBServices {
 		connectMyBatis();
 		Map<String, Object> data = new HashMap<>();
 		data.put("email", user.getEmail());
-//		data.put("password", user.getPassword());
+		data.put("password", user.getPassword());
 		
-		session.selectList("Data.viewUser", data);
+		session.selectList("Data.viewUser");
+		
 		int hasil = session.insert("Data.insertUser", user);
 		
 		session.commit();
@@ -68,6 +103,17 @@ public class DBServices {
 			send.sendToRestApi("Login failed... Email or password is not correct");
 		}
 		return null;
+	}
+	public void resetPass(User user) throws IOException {
+		connectMyBatis();
+		String username = user.getUsername();
+		String password = user.getPassword();
+		
+		User user1 = new User(username,password);
+		session.insert("Data.resetPass",user1);
+		session.commit();
+		session.close();
+		System.out.println("Password reset Successfully");
 	}
 	
 	public void insertOrder(String dataOrder) throws IOException, TimeoutException {

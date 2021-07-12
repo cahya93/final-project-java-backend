@@ -3,17 +3,20 @@ package com.yanto.RestAPIEats.controllers;
 import com.google.gson.Gson;
 import com.yanto.DB.model.Register;
 import com.yanto.DB.model.User;
+import com.yanto.DB.services.DBServices;
 import com.yanto.RestAPIEats.service.RestApiReceive;
 import com.yanto.RestAPIEats.service.RestApiSend;
+import com.yanto.RestAPIEats.util.CustomErrorType;
+import com.yanto.RestAPIEats.util.MessageSuccess;
 import com.yanto.third_party.service.ThirdPartyService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Date;
@@ -75,7 +78,47 @@ public class UserController {
 		delay();
 		return restApiReceive.receiveFromDatabase();
 	}
-
+	
+	@RequestMapping(value = "/forgetPass", method = RequestMethod.POST)
+	public ResponseEntity<?> ForgetPassword(@RequestBody User user) throws Exception {
+		try {
+			restApiSend.UserData(new Gson().toJson(user),"ForgetPass");
+			String token = getJWTToken(user.getEmail());
+			user.setToken(token);
+			String data = restApiReceive.AllRecieve("MessagePass");
+			if(data.equalsIgnoreCase("Success")){
+				return new ResponseEntity<>(new MessageSuccess("Please Use this Token: " + user.getToken()), HttpStatus.CREATED);
+			}else{
+				return new ResponseEntity<>(new CustomErrorType("Please SignUp First"), HttpStatus.NOT_FOUND);
+			}
+		}catch (Exception e){
+			System.out.println("error = " + e + " Database Not yet Starting");
+			return new ResponseEntity<>(new CustomErrorType("Database Not yet Started"),HttpStatus.CREATED);
+		}
+	}
+	@RequestMapping(value = "/Resetpass", method = RequestMethod.PUT)
+	public ResponseEntity<?> ResetPass(@RequestBody User user1) throws Exception {
+		DBServices repo = new DBServices();
+		try {
+			if(repo.Login(user1)==true){
+				restApiSend.UserData(new Gson().toJson(user1),"ResetPass");
+			}else {
+				return new ResponseEntity<>(new CustomErrorType("Wrong Password Format"),HttpStatus.CREATED);
+			}
+			
+		}catch (Exception e){
+			System.out.println("error = " + e);
+			return new ResponseEntity<>(new CustomErrorType("Password or Username Cannot Be empty"),HttpStatus.CREATED);
+		}
+		String hasil = restApiReceive.AllRecieve("Reseted");
+		System.out.println(hasil);
+		if(hasil.equalsIgnoreCase("Failed")){
+			return new ResponseEntity<>(new CustomErrorType("Password Failed to reset"),HttpStatus.CREATED);
+		}else{
+			return new ResponseEntity<>(new CustomErrorType("Password has been reset"), HttpStatus.NOT_FOUND);
+		}
+	}
+	
 	private String getJWTToken(String username) {
 		String secretKey = "mySecretKey";
 		List<GrantedAuthority> grantedAuthorities = AuthorityUtils
